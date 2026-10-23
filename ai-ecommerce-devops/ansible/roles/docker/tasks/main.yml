@@ -1,0 +1,14 @@
+- name: Install Docker via convenience script
+  ansible.builtin.shell: curl -fsSL https://get.docker.com | sh
+  args:
+    creates: /usr/bin/docker
+- name: Enable Docker
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+- name: Let app user run docker
+  ansible.builtin.user:
+    name: "{{ app_user }}"
+    groups: docker
+    append: true

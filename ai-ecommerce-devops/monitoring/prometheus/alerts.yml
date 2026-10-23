@@ -1,0 +1,23 @@
+groups:
+  - name: shopstream
+    rules:
+      - alert: AppDown
+        expr: up{job="shopstream"} == 0
+        for: 1m
+        labels: { severity: critical }
+        annotations: { summary: "ShopStream instance {{ $labels.instance }} is down" }
+      - alert: HighErrorRate
+        expr: sum(rate(http_request_duration_seconds_count{status=~"5.."}[5m])) / sum(rate(http_request_duration_seconds_count[5m])) > 0.05
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: "More than 5% of requests are failing" }
+      - alert: HighLatencyP95
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: "p95 latency above 1s" }
+      - alert: HighMemory
+        expr: process_resident_memory_bytes{job="shopstream"} > 200 * 1024 * 1024
+        for: 10m
+        labels: { severity: warning }
+        annotations: { summary: "App RSS above 200MB (limit is 256Mi)" }

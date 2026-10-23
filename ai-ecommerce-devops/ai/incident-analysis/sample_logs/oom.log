@@ -1,0 +1,3 @@
+FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory
+Back-off restarting failed container app: CrashLoopBackOff
+Last State: Terminated  Reason: OOMKilled

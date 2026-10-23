@@ -1,0 +1,9 @@
+replicaCount: 3
+image: { repository: YOUR_DOCKERHUB_USER/shopstream, tag: latest, pullPolicy: IfNotPresent }
+service: { port: 80, targetPort: 3000 }
+ingress: { enabled: true, className: traefik, host: "" }
+config: { APP_ENV: production, PORT: "3000" }
+secret: { DATABASE_URL: "" }   # supply at install: --set secret.DATABASE_URL=...
+resources:
+  requests: { cpu: 100m, memory: 128Mi }
+  limits: { cpu: 500m, memory: 256Mi }

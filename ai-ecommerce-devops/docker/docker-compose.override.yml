@@ -1,0 +1,12 @@
+﻿services:
+  nginx:
+    ports: !override
+      - "8085:80"
+
+  prometheus:
+    ports: !override
+      - "9095:9090"
+
+  grafana:
+    ports: !override
+      - "3005:3000"

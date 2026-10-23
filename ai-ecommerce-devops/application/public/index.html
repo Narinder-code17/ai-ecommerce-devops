@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><title>ShopStream</title>
+<style>body{font-family:system-ui;max-width:640px;margin:2rem auto;padding:0 1rem}li{margin:.5rem 0}button{margin-left:1rem}</style></head>
+<body><h1>ShopStream</h1><ul id="p"></ul><p id="msg"></p>
+<script>
+fetch('/api/products').then(r=>r.json()).then(ps=>{
+  const ul=document.getElementById('p');
+  ps.forEach(p=>{const li=document.createElement('li');li.textContent=p.name+' - Rs '+p.price;
+    const b=document.createElement('button');b.textContent='Buy';
+    b.onclick=async()=>{const r=await fetch('/api/orders',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({items:[{productId:p.id,qty:1}]})});
+      document.getElementById('msg').textContent='Order #'+(await r.json()).id+' placed';};
+    li.appendChild(b);ul.appendChild(li);});});
+</script></body></html>

@@ -1,0 +1,16 @@
+{
+  "name": "shopstream-app",
+  "version": "1.0.0",
+  "description": "Sample e-commerce application delivered by the DevOps platform",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/app.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "pg": "^8.12.0",
+    "prom-client": "^15.1.3"
+  },
+  "engines": { "node": ">=18" }
+}

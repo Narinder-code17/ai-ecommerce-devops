@@ -1,0 +1,36 @@
+node_modules/
+.env
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars.secret
+*.pem
+*.key
+__pycache__/
+.DS_Store
+
+# Local environment and credentials
+.env.*
+!.env.example
+*.secret
+secrets/
+credentials/
+
+# Dependencies and generated files
+npm-debug.log*
+coverage/
+dist/
+.DS_Store
+Thumbs.db
+
+# Terraform generated files
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Local Kubernetes credentials
+.kube/
+kubeconfig
+kubeconfig.*

@@ -1,0 +1,1 @@
+# stdlib only - no dependencies required. LLM enrichment uses the Anthropic HTTP API when ANTHROPIC_API_KEY is set.

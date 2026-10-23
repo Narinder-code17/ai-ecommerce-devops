@@ -1,0 +1,5 @@
+{"ts":"2026-10-08T10:00:01Z","level":"info","msg":"request","method":"GET","path":"/api/products","status":200,"duration_ms":4}
+{"ts":"2026-10-08T10:00:07Z","level":"error","msg":"database connection timeout","error":"timeout exceeded when trying to connect"}
+{"ts":"2026-10-08T10:00:07Z","level":"error","msg":"request","method":"GET","path":"/ready","status":503,"duration_ms":3001}
+{"ts":"2026-10-08T10:00:12Z","level":"error","msg":"database connection timeout","error":"connect ECONNREFUSED 10.0.0.5:5432"}
+{"ts":"2026-10-08T10:00:15Z","level":"error","msg":"request","method":"POST","path":"/api/orders","status":500,"duration_ms":12}

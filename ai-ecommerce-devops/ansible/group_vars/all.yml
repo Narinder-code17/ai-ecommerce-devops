@@ -1,0 +1,4 @@
+app_user: deploy
+app_dir: /opt/shopstream
+k3s_version: v1.30.4+k3s1
+helm_install_url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3

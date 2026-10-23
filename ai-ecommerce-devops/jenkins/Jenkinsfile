@@ -1,0 +1,64 @@
+// Declarative pipeline matching the report: checkout -> deps -> build -> test ->
+// security -> docker build -> image scan -> push -> deploy -> health check.
+// Jenkins needs: Docker, Node 20 (or NodeTool plugin), kubectl/helm, trivy, gitleaks on the agent.
+// Credentials (Jenkins > Credentials): 'registry-creds' (user/pass), 'kubeconfig' (secret file).
+pipeline {
+  agent any
+  options { timestamps(); disableConcurrentBuilds(); timeout(time: 30, unit: 'MINUTES') }
+  environment {
+    REGISTRY   = 'docker.io'
+    IMAGE_REPO = 'YOUR_DOCKERHUB_USER/shopstream'   // <-- change me
+    IMAGE_TAG  = "${env.BUILD_NUMBER}-${env.GIT_COMMIT?.take(7) ?: 'local'}"
+    APP_URL    = 'http://shop.example.com'           // <-- change me
+  }
+  triggers { githubPush() }
+  stages {
+    stage('Checkout') { steps { checkout scm } }
+    stage('Install Dependencies') { steps { dir('application') { sh 'npm ci' } } }
+    stage('Build')  { steps { dir('application') { sh 'npm run --if-present build' } } }
+    stage('Test')   { steps { dir('application') { sh 'npm test' } } }
+    stage('Security Checks') {
+      parallel {
+        stage('Dependency Scan') { steps { dir('application') { sh 'npm audit --audit-level=high --omit=dev' } } }
+        stage('Secret Scan')     { steps { sh 'gitleaks detect --source . --config security/gitleaks.toml --no-banner' } }
+      }
+    }
+    stage('Docker Build') {
+      steps { sh 'docker build -f docker/Dockerfile -t $IMAGE_REPO:$IMAGE_TAG -t $IMAGE_REPO:latest .' }
+    }
+    stage('Image Scan') {
+      steps { sh 'trivy image --config security/trivy.yaml --exit-code 1 --severity CRITICAL,HIGH --ignore-unfixed $IMAGE_REPO:$IMAGE_TAG' }
+    }
+    stage('Push Image') {
+      when { branch 'main' }
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'registry-creds', usernameVariable: 'U', passwordVariable: 'P')]) {
+          sh 'echo "$P" | docker login -u "$U" --password-stdin $REGISTRY'
+          sh 'docker push $IMAGE_REPO:$IMAGE_TAG && docker push $IMAGE_REPO:latest'
+        }
+      }
+    }
+    stage('Deploy') {
+      when { branch 'main' }
+      steps {
+        withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+          sh 'IMAGE_REPO=$IMAGE_REPO scripts/deploy.sh helm $IMAGE_TAG'
+        }
+      }
+    }
+    stage('Health Check') {
+      when { branch 'main' }
+      steps { sh 'scripts/health-check.sh $APP_URL/health' }
+    }
+  }
+  post {
+    success { echo "Deployment success: $IMAGE_REPO:$IMAGE_TAG" }
+    failure {
+      echo 'Pipeline failed - rolling back if a release exists'
+      withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
+        sh 'helm rollback shopstream -n shopstream || true'
+      }
+    }
+    always { sh 'docker logout $REGISTRY || true' }
+  }
+}

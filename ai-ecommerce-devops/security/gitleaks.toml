@@ -1,0 +1,7 @@
+title = "shopstream gitleaks config"
+[extend]
+useDefault = true
+[allowlist]
+description = "Template/dev placeholders"
+regexes = ['''CHANGE_ME''', '''shop_dev_pw''', '''admin_change_me''', '''REALPASS''']
+paths = ['''^kubernetes/secret\.yaml$''']

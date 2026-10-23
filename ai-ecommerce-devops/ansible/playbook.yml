@@ -1,0 +1,4 @@
+- name: Configure shopstream server
+  hosts: k8s
+  become: true
+  roles: [common, docker, k3s]

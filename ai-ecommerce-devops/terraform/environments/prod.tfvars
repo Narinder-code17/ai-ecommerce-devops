@@ -1,0 +1,5 @@
+environment   = "prod"
+region        = "ap-south-1"
+instance_type = "t3.large"
+key_name      = "shopstream-key"
+admin_cidr    = "203.0.113.4/32"
