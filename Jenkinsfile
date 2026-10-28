@@ -9,7 +9,6 @@ pipeline {
     environment {
         PATH = "C:\\Program Files\\nodejs;${env.PATH}"
         IMAGE_NAME = 'shopstream:jenkins'
-        COMPOSE_FILES = '-f docker/docker-compose.yml -f docker/docker-compose.override.yml'
     }
 
     stages {
@@ -41,7 +40,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat 'docker compose %COMPOSE_FILES% up -d --build'
+                bat 'docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d --build'
             }
         }
 
