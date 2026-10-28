@@ -1,7 +1,6 @@
 # ---- build stage ----
 FROM node:20-alpine3.23 AS build
-RUN apk upgrade --no-cache \
-    && npm install --global npm@11
+RUN apk upgrade --no-cache
 WORKDIR /app
 COPY application/package*.json ./
 RUN npm ci --omit=dev
@@ -9,8 +8,8 @@ COPY application/ ./
 
 # ---- runtime stage (small, non-root) ----
 FROM node:20-alpine3.23
-RUN apk upgrade --no-cache \
-    && npm install --global npm@11
+RUN apk upgrade --no-cache
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack
 ENV NODE_ENV=production PORT=3000
 WORKDIR /app
 RUN addgroup -S app && adduser -S app -G app
