@@ -38,6 +38,15 @@ pipeline {
             }
         }
 
+        stage('Docker Compose Diagnostics') {
+            steps {
+                bat 'where docker'
+                bat 'docker --version'
+                bat 'docker compose version'
+                bat 'docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml config --services'
+            }
+        }
+
         stage('Deploy') {
             steps {
                 bat 'docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d --build'
