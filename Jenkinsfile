@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -8,6 +9,7 @@ pipeline {
 
     environment {
         PATH = "C:\\Program Files\\nodejs;C:\\Windows\\System32;${env.PATH}"
+        COMPOSE_EXE = 'C:\\Users\\nar in\\.docker\\cli-plugins\\docker-compose.exe'
         IMAGE_NAME = 'shopstream:jenkins'
     }
 
@@ -42,27 +44,17 @@ pipeline {
             steps {
                 bat '"C:\\Windows\\System32\\where.exe" docker'
                 bat 'docker --version'
-                bat 'docker compose version'
-                bat 'docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml config --services'
+                bat '"C:\\Users\\narin\\.docker\\cli-plugins\\docker-compose.exe" version'
+                bat '"C:\\Users\\narin\\.docker\\cli-plugins\\docker-compose.exe" -f docker/docker-compose.yml -f docker/docker-compose.override.yml config --services'
             }
         }
 
         stage('Deploy') {
             steps {
-                bat 'docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d --build'
+                bat '"C:\\Users\\narin\\.docker\\cli-plugins\\docker-compose.exe" -f docker/docker-compose.yml -f docker/docker-compose.override.yml up -d --build'
             }
         }
 
         stage('Health Check') {
             steps {
-                bat 'powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri http://localhost:8085/health -UseBasicParsing -TimeoutSec 10; if ($r.StatusCode -ne 200) { exit 1 } } catch { exit 1 }"'
-            }
-        }
-    }
-
-    post {
-        always {
-            echo 'ShopStream Jenkins pipeline finished.'
-        }
-    }
-}
+                bat 'powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri http://localhost:8085/health -Use
