@@ -20,9 +20,9 @@ pipeline {
 
         stage('Install, Test and Audit') {
             steps {
-                bat 'npm --prefix application ci'
-                bat 'npm --prefix application test'
-                bat 'npm --prefix application audit --audit-level=high --omit=dev'
+                bat '"C:\\Program Files\\nodejs\\npm.cmd" --prefix application ci'
+                bat '"C:\\Program Files\\nodejs\\npm.cmd" --prefix application test'
+                bat '"C:\\Program Files\\nodejs\\npm.cmd" --prefix application audit --audit-level=high --omit=dev'
             }
         }
 
