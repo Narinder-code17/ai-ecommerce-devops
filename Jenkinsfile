@@ -1,4 +1,3 @@
-```groovy
 pipeline {
     agent any
 
@@ -9,7 +8,6 @@ pipeline {
 
     environment {
         PATH = "C:\\Program Files\\nodejs;C:\\Windows\\System32;${env.PATH}"
-        COMPOSE_EXE = 'C:\\Users\\nar in\\.docker\\cli-plugins\\docker-compose.exe'
         IMAGE_NAME = 'shopstream:jenkins'
     }
 
@@ -57,4 +55,14 @@ pipeline {
 
         stage('Health Check') {
             steps {
-                bat 'powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri http://localhost:8085/health -Use
+                bat 'powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri http://localhost:8085/health -UseBasicParsing -TimeoutSec 10; if ($r.StatusCode -ne 200) { exit 1 } } catch { exit 1 }"'
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'ShopStream Jenkins pipeline finished.'
+        }
+    }
+}
