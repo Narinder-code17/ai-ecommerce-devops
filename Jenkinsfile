@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        PATH = "C:\\Program Files\\nodejs;${env.PATH}"
+        PATH = "C:\\Program Files\\nodejs;C:\\Windows\\System32;${env.PATH}"
         IMAGE_NAME = 'shopstream:jenkins'
     }
 
@@ -40,7 +40,7 @@ pipeline {
 
         stage('Docker Compose Diagnostics') {
             steps {
-                bat 'where docker'
+                bat '"C:\\Windows\\System32\\where.exe" docker'
                 bat 'docker --version'
                 bat 'docker compose version'
                 bat 'docker compose -f docker/docker-compose.yml -f docker/docker-compose.override.yml config --services'
