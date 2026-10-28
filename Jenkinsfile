@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -53,11 +54,11 @@ pipeline {
             }
         }
 
-       stage('Health Check') {
-    steps {
-        bat '"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -NoProfile -Command "try { $r = Invoke-WebRequest -Uri http://localhost:8085/health -UseBasicParsing -TimeoutSec 10; if ($r.StatusCode -ne 200) { exit 1 } } catch { exit 1 }"'
-    }
-}
+        stage('Health Check') {
+            steps {
+                bat '"C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe" -NoProfile -ExecutionPolicy Bypass -Command "try { $r = Invoke-WebRequest -Uri http://localhost:8085/health -UseBasicParsing -TimeoutSec 10; if ($r.StatusCode -ne 200) { exit 1 } } catch { exit 1 }"'
+            }
+        }
     }
 
     post {
