@@ -38,16 +38,22 @@ pipeline {
             }
         }
 
-        stage('Deploy and Health Check') {
+        stage('Deploy') {
             steps {
                 bat 'docker compose %COMPOSE_FILES% up -d --build'
+            }
+        }
 
-                powershell '''
-                    $ok = $false
+        stage('Health Check') {
+            steps {
+                bat 'powershell -NoProfile -Command "try { $r = Invoke-WebRequest -Uri http://localhost:8085/health -UseBasicParsing -TimeoutSec 10; if ($r.StatusCode -ne 200) { exit 1 } } catch { exit 1 }"'
+            }
+        }
+    }
 
-                    for ($i = 1; $i -le 15; $i++) {
-                        try {
-                            $response = Invoke-WebRequest -Uri "http://localhost:8085/health" -UseBasicParsing -TimeoutSec 5
-
-                            if ($response.StatusCode -eq 200) {
-                                $ok = $
+    post {
+        always {
+            echo 'ShopStream Jenkins pipeline finished.'
+        }
+    }
+}
