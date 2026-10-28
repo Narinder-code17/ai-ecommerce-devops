@@ -41,14 +41,13 @@ pipeline {
         stage('Deploy and Health Check') {
             steps {
                 bat 'docker compose %COMPOSE_FILES% up -d --build'
-                bat 'powershell -NoProfile -ExecutionPolicy Bypass -Command "$ok=$false; for($i=1; $i -le 15; $i++){ try { $r=Invoke-WebRequest -Uri http://localhost:8085/health -UseBasicParsing -TimeoutSec 5; if($r.StatusCode -eq 200){ $ok=$true; Write-Host ''Health check passed''; break } } catch { Write-Host ''Waiting for app...'' }; Start-Sleep -Seconds 2 }; if(-not $ok){ docker compose %COMPOSE_FILES% logs app; exit 1 }"'
-            }
-        }
-    }
 
-    post {
-        always {
-            echo 'ShopStream Jenkins pipeline finished.'
-        }
-    }
-}
+                powershell '''
+                    $ok = $false
+
+                    for ($i = 1; $i -le 15; $i++) {
+                        try {
+                            $response = Invoke-WebRequest -Uri "http://localhost:8085/health" -UseBasicParsing -TimeoutSec 5
+
+                            if ($response.StatusCode -eq 200) {
+                                $ok = $
