@@ -21,3 +21,23 @@ groups:
         for: 10m
         labels: { severity: warning }
         annotations: { summary: "App RSS above 200MB (limit is 256Mi)" }
+
+  - name: postgres
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL database connection is down"
+          description: "The PostgreSQL exporter cannot connect to the database."
+
+      - alert: PostgreSQLExporterDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL exporter is down"
+          description: "Prometheus cannot scrape the PostgreSQL exporter."
