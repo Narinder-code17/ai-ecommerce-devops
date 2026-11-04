@@ -1,9 +1,8 @@
+# ShopStream — DevOps Automation & Cloud Deployment Platform
 
-# ShopStream — DevOps Automation & Monitoring Platform
+A containerized e-commerce application demonstrating practical DevOps and DevSecOps workflows using Docker, Docker Compose, PostgreSQL, Jenkins, GitHub Actions, AWS, Trivy, Prometheus, Grafana and CloudWatch.
 
-A containerized e-commerce application built to demonstrate practical DevOps and DevSecOps workflows using Docker, Docker Compose, PostgreSQL, Jenkins, GitHub Actions, Trivy, Prometheus, and Grafana.
-
-ShopStream focuses on automating application delivery, maintaining persistent application data, scanning container images, and monitoring application and database health.
+ShopStream focuses on automating application delivery, securing deployment pipelines, maintaining persistent application data, implementing cloud infrastructure, monitoring application health and establishing reliable database backup and recovery procedures.
 
 **Repository:** [Narinder-code17/ai-ecommerce-devops](https://github.com/Narinder-code17/ai-ecommerce-devops)
 
@@ -13,86 +12,123 @@ ShopStream focuses on automating application delivery, maintaining persistent ap
 
 ## 1. Project Overview
 
-ShopStream is a Node.js/Express-based e-commerce application supported by a DevOps environment.
+ShopStream is a Node.js/Express-based e-commerce application supported by a DevOps and cloud deployment environment.
 
-The project demonstrates how application code can be:
+The project demonstrates how an application can be:
 
-- Managed through Git and GitHub.
-- Tested and validated through CI/CD pipelines.
-- Packaged into Docker images.
+- Managed using Git and GitHub.
+- Tested and validated through automated CI/CD pipelines.
+- Containerized using Docker.
 - Deployed using Docker Compose.
 - Connected to PostgreSQL for persistent data storage.
-- Scanned using Trivy for security issues.
-- Monitored using Prometheus and Grafana.
-- Protected through Prometheus alert rules.
+- Scanned using Trivy and Gitleaks.
+- Deployed to AWS EC2.
+- Secured using HTTPS and IAM-based access control.
+- Monitored using Prometheus, Grafana and Amazon CloudWatch.
+- Protected through automated database backups to Amazon S3.
+- Recovered using tested database restoration procedures.
 
-The current verified implementation runs locally using Docker Desktop and Docker Compose.
+The project includes both a local development environment and an AWS-hosted deployment.
 
 ## 2. Architecture
 
+### 2.1 Overall Architecture
+
 ```text
-                 Developer
-                     |
-                     v
-                GitHub Repo
-                     |
-          +----------+----------+
-          |                     |
-          v                     v
-     GitHub Actions          Jenkins
-          |                     |
-          +----------+----------+
-                     |
-                     v
-              CI/CD Validation
-          Tests | npm audit | Trivy
-                     |
-                     v
-               Docker Image
-                     |
-                     v
-              Docker Compose
-                     |
-          +----------+-----------+
-          |          |           |
-          v          v           v
-        Nginx     ShopStream   PostgreSQL
-                    API          |
-                     |           |
-                     +-----+-----+
+                       Developer
                            |
-                     Persistent Data
+                           v
+                      Git / GitHub
                            |
-          +----------------+----------------+
-          |                                 |
-          v                                 v
-      Prometheus                      PostgreSQL
-          |                            Exporter
-          |                                 |
-          +---------------+-----------------+
-                          |
-                          v
-                       Grafana
-                          |
-                   Monitoring Dashboard
+              +------------+------------+
+              |                         |
+              v                         v
+        GitHub Actions                Jenkins
+              |
+              v
+       Build and Test
+              |
+       +------+------+
+       |             |
+       v             v
+    Gitleaks       Trivy
+       |             |
+       +------+------+
+              |
+              v
+       Docker Image
+              |
+              v
+       AWS OIDC Login
+              |
+              v
+       AWS Systems Manager
+              |
+              v
+           AWS EC2
+              |
+          Apache
+        HTTPS :443
+              |
+              v
+       ShopStream API
+        Docker :3000
+              |
+              v
+          PostgreSQL
+              |
+       Persistent Volume
+              |
+              v
+       Automated Backup
+              |
+              v
+          Amazon S3
+
+              AWS Monitoring
+                    |
+              Amazon CloudWatch
+                    |
+          +---------+----------+
+          |                    |
+          v                    v
+       CloudWatch            SNS Email
+         Alarms             Notifications
+
+       Local Monitoring
+              |
+       +------+------+
+       |             |
+       v             v
+   Prometheus      Grafana
+       |
+   PostgreSQL
+    Exporter
 ```
 
-### Main components
+### 2.2 Main Components
 
 | Component | Responsibility |
 |---|---|
-| GitHub | Source-code management and repository hosting |
-| GitHub Actions | Automated repository CI workflow |
-| Jenkins | Application CI/CD pipeline |
+| GitHub | Source-code management |
+| GitHub Actions | Automated CI/CD workflow |
+| Jenkins | Local application CI/CD pipeline |
 | Docker | Application containerization |
-| Docker Compose | Multi-container service orchestration |
-| Nginx | Reverse proxy |
+| Docker Compose | Multi-container orchestration |
 | Node.js / Express | Application API |
-| PostgreSQL | Persistent order storage |
-| Trivy | Container security scanning |
-| Prometheus | Metrics collection and alert evaluation |
-| PostgreSQL Exporter | Database metrics collection |
-| Grafana | Monitoring dashboards and visualization |
+| PostgreSQL | Persistent database |
+| Trivy | Container vulnerability scanning |
+| Gitleaks | Secret detection |
+| AWS EC2 | Cloud application hosting |
+| Apache | Reverse proxy and HTTPS termination |
+| AWS Systems Manager | Remote deployment execution |
+| AWS IAM / OIDC | Secure access and authentication |
+| Amazon S3 | Database backup storage |
+| Amazon CloudWatch | Infrastructure and application monitoring |
+| Amazon SNS | Email notifications |
+| Prometheus | Metrics collection |
+| PostgreSQL Exporter | Database metrics |
+| Grafana | Monitoring dashboards |
 
 ## 3. Technology Stack
 
@@ -101,14 +137,20 @@ The current verified implementation runs locally using Docker Desktop and Docker
 | Application | Node.js, Express.js |
 | Database | PostgreSQL 16 |
 | Containerization | Docker, Docker Compose |
-| Reverse Proxy | Nginx |
+| Reverse Proxy | Apache HTTP Server |
 | CI/CD | Jenkins, GitHub Actions |
-| Security | Trivy, npm audit |
-| Monitoring | Prometheus |
-| Database Monitoring | PostgreSQL Exporter |
+| Security | Trivy, Gitleaks, npm audit |
+| Cloud Platform | AWS |
+| Compute | Amazon EC2 |
+| Storage | Amazon S3 |
+| Deployment | AWS Systems Manager |
+| Authentication | AWS IAM, GitHub OIDC |
+| HTTPS | Let's Encrypt, Certbot |
+| Monitoring | Amazon CloudWatch, Prometheus |
 | Visualization | Grafana |
+| Notifications | Amazon SNS |
 | Version Control | Git, GitHub |
-| Scripting / CLI | Windows PowerShell |
+| Scripting / CLI | Windows PowerShell, Linux Shell |
 
 ## 4. Repository Structure
 
@@ -137,25 +179,26 @@ ai-ecommerce-devops/
 |       |   `-- shopstream-overview.json
 |       `-- provisioning/
 |
-|-- Jenkinsfile
-|
 |-- .github/
 |   `-- workflows/
+|       `-- ci.yml
+|
+|-- Jenkinsfile
 |
 `-- README.md
 ```
 
-Additional experimental or development directories may exist in the repository. Their deployment and operational status should be evaluated separately before treating them as completed production features.
+Additional development and deployment configuration files may exist in the repository.
 
 ## 5. Application Features
+
+ShopStream provides application endpoints for health monitoring, readiness verification and order management.
 
 ### Health Endpoint
 
 ```http
 GET /health
 ```
-
-Returns application health information.
 
 Example response:
 
@@ -170,8 +213,6 @@ Example response:
 ```http
 GET /ready
 ```
-
-Returns the application's readiness status.
 
 Example response:
 
@@ -193,9 +234,17 @@ Retrieves stored order records.
 POST /api/orders
 ```
 
-Creates an order.
+Creates a new order.
 
-Order records are stored in PostgreSQL when database configuration is available.
+Order information is stored in PostgreSQL.
+
+### Products API
+
+```http
+GET /api/products
+```
+
+Retrieves available products from the application.
 
 ### Metrics Endpoint
 
@@ -217,22 +266,31 @@ Example connection format:
 postgres://shop:<DB_PASSWORD>@db:5432/shop
 ```
 
-A named Docker volume called `pgdata` stores PostgreSQL data.
+A named Docker volume maintains PostgreSQL data across normal container restarts and recreation.
 
-This allows database records to persist across normal container restarts and recreation.
+### Database Validation
 
-The order API was verified to return five previously stored records during final project testing.
+The application was tested by:
 
-## 7. Docker Compose Setup
+- Creating and retrieving orders.
+- Restarting the PostgreSQL container.
+- Verifying that existing records remained available.
+- Restoring a backup into a separate temporary database.
+
+**Latest verified live database count: 6 orders.**
+
+Database persistence was successfully verified after restarting the PostgreSQL container.
+
+## 7. Local Docker Compose Setup
 
 ### Prerequisites
 
 - Windows 10/11 or another supported operating system.
 - Docker Desktop.
 - Git.
-- Node.js and npm for running application tests locally.
+- Node.js and npm for local testing.
 
-### Clone the repository
+### Clone the Repository
 
 ```powershell
 git clone https://github.com/Narinder-code17/ai-ecommerce-devops.git
@@ -242,7 +300,7 @@ cd ai-ecommerce-devops
 git checkout develop
 ```
 
-### Validate Docker Compose configuration
+### Validate Docker Compose Configuration
 
 ```powershell
 docker compose `
@@ -250,7 +308,7 @@ docker compose `
   -f docker/docker-compose.override.yml config --quiet
 ```
 
-### Build and start the application
+### Build and Start the Application
 
 ```powershell
 docker compose `
@@ -258,7 +316,7 @@ docker compose `
   -f docker/docker-compose.override.yml up -d --build
 ```
 
-### Verify running containers
+### Verify Running Containers
 
 ```powershell
 docker compose `
@@ -266,7 +324,7 @@ docker compose `
   -f docker/docker-compose.override.yml ps
 ```
 
-### View container logs
+### View Container Logs
 
 ```powershell
 docker compose `
@@ -274,7 +332,7 @@ docker compose `
   -f docker/docker-compose.override.yml logs -f
 ```
 
-### Stop the environment
+### Stop the Environment
 
 ```powershell
 docker compose `
@@ -282,11 +340,11 @@ docker compose `
   -f docker/docker-compose.override.yml down
 ```
 
-The normal `down` command preserves the named PostgreSQL volume. Do not add `-v` unless you intentionally want to delete persistent database storage.
+The normal `down` command preserves named PostgreSQL volumes. Do not add `-v` unless you intentionally want to remove persistent database storage.
 
-## 8. Application Access
+## 8. Local Application Access
 
-After successfully starting the services, use these local URLs:
+The local development configuration uses the following endpoints:
 
 | Service | URL |
 |---|---|
@@ -300,24 +358,13 @@ After successfully starting the services, use these local URLs:
 | Grafana | http://localhost:3005 |
 | Jenkins | http://localhost:8080 |
 
-Jenkins is managed separately from the ShopStream Compose application stack in the current local setup.
-
-### Grafana Login
-
-The local development configuration previously used:
-
-```text
-Username: admin
-Password: admin_change_me
-```
-
-Change default credentials before exposing the environment to other users or deploying it publicly.
+Jenkins is managed separately from the ShopStream Compose application stack in the local setup.
 
 ## 9. Jenkins CI/CD Pipeline
 
-The project includes a Jenkins pipeline configured to automate application delivery.
+The project includes a Jenkins pipeline for automating application delivery.
 
-### Pipeline stages
+### Pipeline Stages
 
 1. Checkout
 2. Install Dependencies, Test and Audit
@@ -327,68 +374,390 @@ The project includes a Jenkins pipeline configured to automate application deliv
 6. Deploy
 7. Health Check
 
-### Pipeline objectives
+### Pipeline Objectives
 
-- Retrieve the latest source code.
-- Install required dependencies.
-- Run automated application tests.
-- Check dependencies using npm audit.
-- Build the Docker image.
-- Scan the image using Trivy.
+- Retrieve source code.
+- Install dependencies.
+- Execute automated application tests.
+- Perform npm audit.
+- Build Docker images.
+- Scan images using Trivy.
 - Validate Docker Compose configuration.
 - Deploy the application.
 - Verify application health.
 
-### Jenkins access
+### Jenkins Access
 
 ```text
 http://localhost:8080
 ```
 
-The configured Jenkins job is:
+Configured Jenkins job:
 
 ```text
 ShopStream-CI-CD
 ```
 
-## 10. GitHub Actions
+## 10. GitHub Actions CI/CD
 
-The GitHub repository also contains an automated CI workflow.
+GitHub Actions automates the build, testing, security scanning and AWS deployment workflow.
 
-The workflow is used to validate repository changes when commits are pushed to the `develop` branch.
+The workflow is configured in:
 
-Latest recorded verification:
+```text
+.github/workflows/ci.yml
+```
+
+### Workflow Stages
+
+**1. Build, Test and Security Scan**
+
+- Checkout repository.
+- Configure Node.js 20.
+- Install dependencies.
+- Run application tests.
+- Execute npm audit.
+- Scan for exposed secrets using Gitleaks.
+- Build the Docker image.
+- Perform Trivy security scanning.
+
+**2. Deploy to AWS EC2**
+
+- Authenticate with AWS using GitHub OIDC.
+- Assume the configured IAM deployment role.
+- Execute deployment commands through AWS Systems Manager.
+- Deploy the application to the EC2 instance.
+- Perform application health verification.
+
+Deployment is configured for pushes to the `develop` branch.
+
+### Latest Verified GitHub Actions Run
 
 ```text
 Workflow: ci
-Run: #20
-Commit: cc7c76e
+Run: #25
+Commit: 5dace8a
 Branch: develop
-Result: SUCCESS
+Commit Message: Remove temporary OIDC debugging step
+
+Build, Test and Security Scan: SUCCESS
+Deploy to AWS EC2: SUCCESS
+
+Total Workflow Duration: 1 minute
+Gitleaks: No leaks detected
+Overall Result: SUCCESS
 ```
 
 View workflow execution:
 
 [GitHub Actions — ShopStream](https://github.com/Narinder-code17/ai-ecommerce-devops/actions)
 
-## 11. Security Scanning with Trivy
+## 11. AWS EC2 Deployment
 
-Trivy is integrated into the CI/CD workflow to scan the built Docker image.
+ShopStream is deployed on an Amazon EC2 instance.
 
-The scan is intended to identify:
+### Infrastructure Details
 
-- Operating-system package vulnerabilities.
-- Application dependency vulnerabilities.
-- Exposed secrets.
-- Other detected image security risks.
+| Configuration | Value |
+|---|---|
+| AWS Region | ap-south-1 (Mumbai) |
+| Instance Name | ShopStream-Server |
+| Instance Type | t3.micro |
+| Operating System | Amazon Linux |
+| Storage | 8 GB gp3 |
+| Elastic IP | 13.205.31.41 |
+| Application Port | 3000 (internal) |
+| Database | PostgreSQL |
+| Web Server | Apache HTTP Server |
 
-Security scans should be reviewed whenever the application image or dependencies change.
+### Deployment Architecture
 
-**Important:** A successful pipeline does not mean that every image is vulnerability-free. Findings and scan failures must be assessed using the actual output of each scan.
+The EC2 instance hosts the ShopStream application using Docker containers.
 
-## 12. Monitoring with Prometheus
+The application is accessible through Apache, which acts as a reverse proxy and forwards incoming requests to the application running on the local container port.
 
-Prometheus collects metrics from three configured scrape jobs.
+PostgreSQL runs in a separate container and stores application data using persistent Docker storage.
+
+### Application Verification
+
+The following endpoints were successfully verified:
+
+```text
+https://13.205.31.41/
+https://13.205.31.41/health
+```
+
+Health endpoint response:
+
+```json
+{
+  "status": "ok"
+}
+```
+
+The application and database containers were also verified as healthy.
+
+## 12. HTTPS Configuration and SSL Certificate
+
+HTTPS was configured using Apache HTTP Server, Let's Encrypt and Certbot.
+
+### Implementation
+
+- Installed Apache SSL support.
+- Configured Apache as a reverse proxy.
+- Obtained a Let's Encrypt certificate for the Elastic IP address.
+- Configured the certificate and private key in the Apache SSL virtual host.
+- Configured HTTP-to-HTTPS redirection.
+- Preserved the ACME challenge path for certificate renewal.
+- Configured automated Certbot renewal using systemd.
+
+### Certificate Paths
+
+```text
+Certificate:
+/etc/letsencrypt/live/13.205.31.41/fullchain.pem
+
+Private Key:
+/etc/letsencrypt/live/13.205.31.41/privkey.pem
+```
+
+### HTTPS Verification
+
+The following checks were completed:
+
+- Apache configuration validation.
+- HTTPS certificate verification.
+- HTTP-to-HTTPS redirection.
+- Application health endpoint over HTTPS.
+- Certbot renewal dry-run.
+
+The certificate uses Let's Encrypt's short-lived IP certificate profile. Its validity is approximately 160 hours, so automated renewal is essential.
+
+### Automated Renewal
+
+A custom systemd service and timer were configured to check certificate renewal every 12 hours.
+
+```bash
+sudo systemctl status certbot-renew.timer
+```
+
+Renewal simulation:
+
+```bash
+sudo certbot renew --dry-run
+```
+
+The renewal dry-run completed successfully.
+
+## 13. AWS Security Implementation
+
+Security was implemented across the EC2 instance, network configuration, IAM permissions and CI/CD pipeline.
+
+### 13.1 EC2 Security Group
+
+The security group `ShopStream-SG` uses the following inbound rules:
+
+| Port | Protocol | Purpose |
+|---|---|---|
+| 22 | TCP | SSH administration |
+| 80 | TCP | HTTP and ACME challenge |
+| 443 | TCP | HTTPS application access |
+
+SSH access is restricted to the authorized public IP address.
+
+The application and PostgreSQL ports are not directly exposed to the public internet.
+
+### 13.2 IAM Roles
+
+Two main IAM roles are configured.
+
+**ShopStreamEC2S3BackupRole**
+
+Attached to the EC2 instance to support:
+
+- Systems Manager access.
+- CloudWatch Agent operation.
+- S3 database backup operations.
+
+The custom S3 policy is scoped to the ShopStream backup bucket.
+
+**ShopStreamGitHubActionsDeployRole**
+
+Used by GitHub Actions to authenticate with AWS through OpenID Connect.
+
+The role is restricted to the ShopStream GitHub repository and the `develop` branch.
+
+Its permissions support deployment through AWS Systems Manager.
+
+### 13.3 GitHub OIDC Authentication
+
+GitHub Actions uses OpenID Connect to obtain temporary AWS credentials.
+
+This avoids storing long-lived AWS access keys in GitHub repository secrets.
+
+The deployment workflow uses:
+
+```text
+GitHub Actions
+      |
+      v
+GitHub OIDC Provider
+      |
+      v
+AWS IAM Role
+      |
+      v
+AWS Systems Manager
+      |
+      v
+EC2 Deployment
+```
+
+### 13.4 IMDSv2
+
+The EC2 instance is configured to require Instance Metadata Service Version 2 (IMDSv2), adding protection to instance metadata access.
+
+## 14. AWS Database Backup and Recovery
+
+Automated PostgreSQL backups are configured using a shell script, systemd timer and Amazon S3.
+
+### Backup Configuration
+
+| Component | Configuration |
+|---|---|
+| Database | PostgreSQL |
+| Backup Format | PostgreSQL custom dump |
+| Backup Script | `/usr/local/bin/shopstream-backup.sh` |
+| Storage | Amazon S3 |
+| S3 Bucket | `shopstream-db-backups-nk-2026` |
+| Backup Schedule | Daily at 02:00 UTC |
+| Local Retention | 7 days |
+
+### Backup Architecture
+
+```text
+       PostgreSQL Database
+                |
+                v
+       Backup Shell Script
+                |
+                v
+        PostgreSQL Dump
+                |
+                v
+       Amazon S3 Bucket
+                |
+                v
+       Backup Retention
+```
+
+The S3 bucket is private and configured with:
+
+- Block Public Access.
+- Bucket versioning.
+- Server-side encryption using S3-managed keys.
+
+### Backup Verification
+
+Successful database backup uploads to S3 were verified.
+
+### Recovery Testing
+
+A backup was restored into a separate temporary PostgreSQL database named:
+
+```text
+shop_restore_test
+```
+
+The restored database was inspected successfully.
+
+The temporary recovery database was removed after testing, while the live application database remained intact.
+
+The live database was verified to contain six orders.
+
+The backup contained two orders because it was created before four subsequent orders were added. This confirmed that the restored database represented the backup's point-in-time state.
+
+### Backup Schedule Verification
+
+```bash
+sudo systemctl status shopstream-backup.timer
+```
+
+The backup timer is enabled and configured for daily execution.
+
+## 15. AWS CloudWatch Monitoring
+
+Amazon CloudWatch is used to monitor the EC2 infrastructure and application health.
+
+The CloudWatch Agent collects system-level metrics and publishes them under the custom namespace:
+
+```text
+ShopStream/EC2
+```
+
+### Collected Metrics
+
+| Metric | Description |
+|---|---|
+| CPUUtilization | EC2 CPU utilization |
+| mem_used_percent | Memory usage percentage |
+| mem_available | Available system memory |
+| disk_used_percent | Root filesystem disk usage |
+| ShopStreamApplicationHealth | Application health status |
+
+The memory and disk metrics are collected through the CloudWatch Agent.
+
+### CloudWatch Alarms
+
+Five CloudWatch alarms are configured.
+
+| Alarm | Condition | Evaluation |
+|---|---|---|
+| ShopStream-High-CPU | CPU above 70% | 2 datapoints within 10 minutes |
+| ShopStream-High-Memory | Memory above 80% | 2 datapoints within 10 minutes |
+| ShopStream-High-Disk | Disk usage above 80% | 2 datapoints within 10 minutes |
+| ShopStream-App-Down | Application health below 1 | 2 datapoints within 2 minutes |
+| ShopStream-EC2-Status-Failed | EC2 status check failure | 2 datapoints within 2 minutes |
+
+All five alarm notification actions were verified to use the configured SNS topic.
+
+## 16. Amazon SNS Email Notifications
+
+Amazon Simple Notification Service (SNS) is integrated with CloudWatch alarms to deliver email notifications.
+
+### Notification Flow
+
+```text
+       EC2 / Application
+                |
+                v
+         CloudWatch
+                |
+                v
+         CloudWatch Alarm
+                |
+                v
+              SNS
+                |
+                v
+         Email Notification
+```
+
+The SNS topic is:
+
+```text
+ShopStream-CPU-Alert
+```
+
+The email subscription was confirmed.
+
+A direct SNS test message was successfully published, and receipt of the test email was confirmed.
+
+## 17. Local Monitoring with Prometheus
+
+Prometheus collects application and database metrics in the local monitoring environment.
+
+### Configured Scrape Jobs
 
 | Job | Target |
 |---|---|
@@ -400,15 +769,13 @@ The configured scrape interval is 15 seconds.
 
 Prometheus is exposed locally on port `9095`.
 
-### Verify targets
-
-Open:
+### Verify Targets
 
 ```text
 http://localhost:9095/targets
 ```
 
-The expected jobs are:
+The expected targets are:
 
 - prometheus
 - shopstream
@@ -416,7 +783,7 @@ The expected jobs are:
 
 A healthy target is displayed with the state `UP`.
 
-### PostgreSQL health query
+### PostgreSQL Health Query
 
 ```promql
 pg_up{job="postgres"}
@@ -424,7 +791,7 @@ pg_up{job="postgres"}
 
 A value of `1` indicates that the PostgreSQL exporter successfully connects to the database.
 
-## 13. PostgreSQL Exporter
+## 18. PostgreSQL Exporter
 
 The PostgreSQL exporter exposes database metrics to Prometheus.
 
@@ -438,7 +805,7 @@ The monitoring setup includes PostgreSQL active-connection metrics.
 
 The exporter helps monitor database activity without requiring the application to expose database-specific metrics itself.
 
-## 14. Grafana Dashboard
+## 19. Grafana Dashboard
 
 The project includes a provisioned dashboard named:
 
@@ -450,47 +817,43 @@ Access:
 http://localhost:3005/d/shopstream-overview
 ```
 
-### Dashboard panels
+### Dashboard Panels
 
 | Panel | Purpose |
 |---|---|
-| Application availability | Displays application scrape availability |
-| Orders created (1h) | Displays recent order activity |
-| Request rate | Shows application request rate |
-| Requests by status | Groups requests according to HTTP status |
-| p95 latency | Displays the 95th-percentile response latency |
-| CPU usage | Shows application process CPU usage |
-| Memory (RSS) | Shows application resident memory |
-| PostgreSQL Active Connections | Displays active database connections |
+| Application availability | Application scrape availability |
+| Orders created (1h) | Recent order activity |
+| Request rate | Application request rate |
+| Requests by status | HTTP status distribution |
+| p95 latency | 95th-percentile response latency |
+| CPU usage | Application process CPU usage |
+| Memory (RSS) | Application resident memory |
+| PostgreSQL Active Connections | Active database connections |
 
-The dashboard uses Prometheus as its data source and refreshes periodically.
+The dashboard uses Prometheus as its data source.
 
-### Dashboard provisioning
-
-The dashboard is provisioned from its JSON configuration:
+### Dashboard Provisioning
 
 ```text
 monitoring/grafana/dashboards/shopstream-overview.json
 ```
 
-Because it is provisioned, persistent dashboard changes should be made in the JSON source file rather than relying on UI-only edits.
+Dashboard changes should be maintained in the JSON source file when using provisioning.
 
-## 15. Prometheus Alert Rules
+## 20. Prometheus Alert Rules
 
-Six Prometheus alert rules are configured.
+Six Prometheus alert rules are configured in the local monitoring environment.
 
 | Alert | Condition | Duration | Severity |
 |---|---|---|---|
-| AppDown | Application target is unavailable | 1 minute | Critical |
+| AppDown | Application target unavailable | 1 minute | Critical |
 | HighErrorRate | HTTP 5xx error rate exceeds 5% | 5 minutes | Warning |
 | HighLatencyP95 | p95 latency exceeds 1 second | 5 minutes | Warning |
 | HighMemory | Application RSS exceeds 200 MiB | 10 minutes | Warning |
-| PostgreSQLDown | PostgreSQL exporter reports database connection failure | 1 minute | Critical |
-| PostgreSQLExporterDown | Prometheus cannot scrape the PostgreSQL exporter | 1 minute | Critical |
+| PostgreSQLDown | Database connection failure | 1 minute | Critical |
+| PostgreSQLExporterDown | Exporter scrape failure | 1 minute | Critical |
 
-### Validate alert rules
-
-Run:
+### Validate Alert Rules
 
 ```powershell
 docker compose `
@@ -507,7 +870,7 @@ Checking /etc/prometheus/alerts.yml
 SUCCESS: 6 rules found
 ```
 
-### Controlled alert test
+### Controlled Alert Test
 
 The PostgreSQL exporter-down alert was tested by temporarily stopping only the exporter.
 
@@ -518,9 +881,9 @@ docker compose `
   stop postgres-exporter
 ```
 
-After the configured one-minute evaluation period, the alert was observed in the `firing` state.
+After the configured evaluation period, the alert was observed in the `firing` state.
 
-Restore the exporter immediately after testing:
+The exporter was restarted after testing:
 
 ```powershell
 docker compose `
@@ -529,31 +892,39 @@ docker compose `
   start postgres-exporter
 ```
 
-Do not leave the exporter stopped after the test.
+## 21. Testing and Validation
 
-## 16. Testing and Validation
-
-The following checks were recorded during project implementation:
+The following validations were recorded during project implementation.
 
 | Validation | Observed Result |
 |---|---|
 | Application unit tests | Previously recorded: 5/5 passed |
 | npm audit | Previously recorded: 0 vulnerabilities in that run |
 | Docker Compose validation | Successful |
-| PostgreSQL order retrieval | Five existing order records returned |
+| PostgreSQL persistence | Verified after container restart |
+| Live PostgreSQL order count | 6 orders |
 | Application health | `status: ok` |
 | Application readiness | `status: ready` |
 | Prometheus targets | All three targets observed UP |
 | PostgreSQL health metric | `pg_up = 1` |
 | Prometheus rule validation | Six rules found |
-| Exporter failure test | `PostgreSQLExporterDown` reached firing |
-| Exporter recovery | Container started successfully |
-| GitHub Actions | Latest recorded CI run #20 passed |
-| Git repository | Changes committed and pushed to develop |
+| Exporter failure test | Alert reached firing |
+| Exporter recovery | Container restarted successfully |
+| AWS EC2 deployment | Successful |
+| HTTPS certificate verification | Successful |
+| HTTP-to-HTTPS redirection | Successful |
+| Certbot renewal simulation | Successful |
+| S3 backup uploads | Successful |
+| Database restore test | Successful |
+| CloudWatch alarms | Five configured and actions verified |
+| SNS email test | Email received |
+| GitHub Actions Run #25 | Both jobs successful |
+| Gitleaks | No leaks detected in latest workflow |
+| Git repository | Latest workflow cleanup pushed to develop |
 
-These results describe the recorded test runs and environment. They should not be interpreted as a guarantee that every future build will produce identical results.
+These results describe the recorded test runs and environment. They are not a guarantee that every future build or deployment will produce identical results.
 
-## 17. Git Workflow
+## 22. Git Workflow
 
 The active development branch is:
 
@@ -573,55 +944,47 @@ git commit -m "Describe your changes"
 git push origin develop
 ```
 
-The latest recorded monitoring and alert-rule commits are:
+The GitHub Actions workflow automatically validates pushes to the configured branch.
 
-```text
-279d528  Add PostgreSQL exporter and Grafana monitoring dashboard
+## 23. Configuration and Security Notes
 
-cc7c76e  Add PostgreSQL availability alert rules
-```
+Before using the project in a production environment:
 
-## 18. Configuration and Security Notes
+- Use strong database credentials.
+- Never commit `.env` files or actual secrets.
+- Keep SSH access restricted to authorized IP addresses.
+- Avoid exposing internal application and database ports.
+- Review IAM permissions regularly.
+- Maintain HTTPS certificate renewal.
+- Review Trivy vulnerability findings.
+- Monitor CloudWatch alarms and application availability.
+- Verify S3 backup uploads and restoration procedures.
+- Protect Grafana and Prometheus access.
+- Review log retention and access policies.
+- Monitor AWS costs and resource usage.
 
-The following items should be reviewed before any public or production deployment:
+The EC2 deployment is a practical cloud DevOps demonstration and should not automatically be considered production-hardened.
 
-- Change default Grafana credentials.
-- Use strong database passwords.
-- Do not commit `.env` files or real secrets.
-- Restrict exposed host ports.
-- Use HTTPS for public deployments.
-- Configure appropriate authentication and authorization.
-- Review Trivy findings for every image build.
-- Configure PostgreSQL backups and recovery procedures.
-- Review Prometheus retention and monitoring access.
-- Add Alertmanager if email or messaging notifications are required.
-
-The present environment is a local development and demonstration setup.
-
-## 19. Future Enhancements
+## 24. Future Enhancements
 
 Possible improvements include:
 
-- Deploy ShopStream to AWS.
-- Provision cloud infrastructure using Terraform.
-- Configure server automation using Ansible.
-- Deploy the application to Kubernetes.
-- Introduce Helm-based deployment.
-- Add Alertmanager notifications.
-- Integrate centralized logging using the ELK stack.
-- Add an AI-assisted incident analysis component.
-- Introduce automated PostgreSQL backup and restore testing.
-- Improve security policies and runtime hardening.
+- Infrastructure provisioning using Terraform.
+- Configuration management using Ansible.
+- Kubernetes deployment.
+- Helm-based application deployment.
+- Centralized logging using the ELK stack.
+- Advanced application performance monitoring.
+- Additional automated disaster recovery testing.
+- Improved runtime container security.
+- Automated infrastructure compliance checks.
+- Integration with additional incident notification channels.
 
-These are future or separately verifiable extensions; they should not be considered completed deployment features based solely on this report.
+These are potential extensions and are not represented as completed features.
 
-## 20. Author
+## 25. Author
 
 **Narinder Kumar**
-
-DevOps Engineering Project
-
-Mangalore Institute of Technology and Engineering
 
 GitHub: [Narinder-code17](https://github.com/Narinder-code17)
 
@@ -631,4 +994,4 @@ Project Repository:
 
 ---
 
-**ShopStream — Automate. Deploy. Monitor. Improve.**
+**ShopStream — Automate. Deploy. Monitor. Secure. Recover.**s
