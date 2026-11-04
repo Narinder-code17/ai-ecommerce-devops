@@ -1,45 +1,49 @@
 
-# GitHub Actions: lightweight CI alternative / PR gate (Jenkins remains the CD engine)
-name: ci
+      - name: Deploy ShopStream through AWS SSM
+        shell: bash
+        run: |
+          set -euo pipefail
 
-on:
-  pull_request:
-  push:
-    branches: [main, develop]
+          COMMAND_ID=$(aws ssm send-command \
+            --instance-ids "i-03531aa6deda4e393" \
+            --document-name "AWS-RunShellScript" \
+            --comment "ShopStream GitHub Actions deployment" \
+            --parameters '{"commands":["set -e","sudo -u ec2-user -H bash -lc '\''cd /home/ec2-user/ai-ecommerce-devops && git fetch origin && if [ -f docker/ec2-compose.yml ] && ! git ls-files --error-unmatch docker/ec2-compose.yml >/dev/null 2>&1; then mv docker/ec2-compose.yml /home/ec2-user/ec2-compose.yml.backup; fi && git pull --ff-only origin develop && docker compose --env-file .env -p docker -f docker/ec2-compose.yml config --quiet && docker compose --env-file .env -p docker -f docker/ec2-compose.yml up -d --build'\''","sudo -u ec2-user -H bash -lc '\''for i in $(seq 1 30); do if curl -fsS http://localhost/health >/dev/null; then echo \"ShopStream health check passed\"; exit 0; fi; sleep 5; done; echo \"ShopStream health check failed\"; docker compose --env-file /home/ec2-user/ai-ecommerce-devops/.env -p docker -f /home/ec2-user/ai-ecommerce-devops/docker/ec2-compose.yml ps; exit 1'\''"]}' \
+            --query "Command.CommandId" \
+            --output text)
 
-jobs:
-  build-test-scan:
-    runs-on: ubuntu-latest
+          echo "SSM Command ID: $COMMAND_ID"
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+          for attempt in $(seq 1 60); do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "i-03531aa6deda4e393" \
+              --query "Status" \
+              --output text 2>/dev/null || true)
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-          cache-dependency-path: application/package-lock.json
+            echo "Deployment status: $STATUS"
 
-      - name: Install dependencies, test and audit
-        run: npm ci && npm test && npm audit --audit-level=high --omit=dev
-        working-directory: application
+            case "$STATUS" in
+              Success)
+                aws ssm get-command-invocation \
+                  --command-id "$COMMAND_ID" \
+                  --instance-id "i-03531aa6deda4e393" \
+                  --query "StandardOutputContent" \
+                  --output text
+                echo "ShopStream deployment successful!"
+                exit 0
+                ;;
+              Failed|Cancelled|TimedOut|Cancelling)
+                aws ssm get-command-invocation \
+                  --command-id "$COMMAND_ID" \
+                  --instance-id "i-03531aa6deda4e393" \
+                  --output json
+                exit 1
+                ;;
+            esac
 
-      - name: Scan repository for secrets
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            sleep 5
+          done
 
-      - name: Build Docker image
-        run: docker build -f docker/Dockerfile -t shopstream:ci .
-
-      - name: Scan Docker image with Trivy
-        uses: aquasecurity/trivy-action@v0.36.0
-        with:
-          image-ref: shopstream:ci
-          severity: CRITICAL,HIGH
-          exit-code: '1'
-          ignore-unfixed: true
+          echo "Deployment polling timed out."
+          exit 1

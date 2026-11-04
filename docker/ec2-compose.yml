@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: shopstream-db
+    environment:
+      POSTGRES_USER: shop
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      POSTGRES_DB: shop
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shop -d shop"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    mem_limit: 256m
+    networks:
+      - shopstream
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: shopstream-app
+    environment:
+      NODE_ENV: production
+      APP_ENV: production
+      PORT: "3000"
+      DATABASE_URL: postgres://shop:${DB_PASSWORD:?DB_PASSWORD is required}@db:5432/shop
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 320m
+    networks:
+      - shopstream
+
+volumes:
+  pgdata:
+    name: docker_pgdata
+
+networks:
+  shopstream:
+    driver: bridge
